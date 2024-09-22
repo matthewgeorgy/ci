@@ -77,6 +77,6 @@ main :: proc()
 
 	// Compound literal syntax!
 	Token := ciToken{ ciTokenType.AND, "foo", nil, 100 }
-	fmt.println(Token.Type, Token.Lexeme, Token.Object, Token.Line)
+	fmt.println(Token.Type, Token.Lexeme, Token.Literal, Token.Line)
 }
 
