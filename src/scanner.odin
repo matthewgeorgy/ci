@@ -5,14 +5,41 @@ import "core:strconv"
 
 ciScanner :: struct
 {
-	Source 	: string,
-	Tokens 	: [dynamic]ciToken,
-	Start 	: int,
-	Current	: int,
-	Line 	: int,
+	Source 		: string,
+	Tokens 		: [dynamic]ciToken,
+	Start 		: int,
+	Current		: int,
+	Line 		: int,
+	Keywords	: map[string]ciTokenType
 }
 
-ciScanToken :: proc(Scanner : ^ciScanner) -> ciToken
+ciCreateScanner :: proc(Scanner : ^ciScanner, Source : string)
+{
+	Scanner.Source = Source;
+	Scanner.Start = 0;
+	Scanner.Current = 0;
+	Scanner.Line = 1;
+	Scanner.Keywords = make(map[string]ciTokenType)
+
+	Scanner.Keywords["and"]    = ciTokenType.AND
+    Scanner.Keywords["class"]  = ciTokenType.CLASS
+    Scanner.Keywords["else"]   = ciTokenType.ELSE
+    Scanner.Keywords["false"]  = ciTokenType.FALSE
+    Scanner.Keywords["for"]    = ciTokenType.FOR
+    Scanner.Keywords["fun"]    = ciTokenType.FUN
+    Scanner.Keywords["if"]     = ciTokenType.IF
+    Scanner.Keywords["nil"]    = ciTokenType.NIL
+    Scanner.Keywords["or"]     = ciTokenType.OR
+    Scanner.Keywords["print"]  = ciTokenType.PRINT
+    Scanner.Keywords["return"] = ciTokenType.RETURN
+    Scanner.Keywords["super"]  = ciTokenType.SUPER
+    Scanner.Keywords["this"]   = ciTokenType.THIS
+    Scanner.Keywords["true"]   = ciTokenType.TRUE
+    Scanner.Keywords["var"]    = ciTokenType.VAR
+    Scanner.Keywords["while"]  = ciTokenType.WHILE
+}
+
+ciScanToken :: proc(Scanner : ^ciScanner)
 {
 	C := ciAdvance(Scanner)
 
@@ -62,6 +89,10 @@ ciScanToken :: proc(Scanner : ^ciScanner) -> ciToken
 			if (ciIsDigit(C))
 			{
 				ciNumber(Scanner)
+			}
+			else if (ciIsAlpha(C))
+			{
+				ciIdentifier(Scanner)
 			}
 			else
 			{
@@ -201,5 +232,36 @@ ciPeekNext :: proc(Scanner : ^ciScanner) -> u8
 	}
 
 	return (Scanner.Source[Scanner.Current + 1])
+}
+
+ciIdentifier :: proc(Scanner : ^ciScanner)
+{
+	for (ciIsAlphaNumeric(ciPeek(Scanner)))
+	{
+		ciAdvance(Scanner)
+	}
+
+	Text := Scanner.Source[Scanner.Start:Scanner.Current]
+	Type := Scanner.Keywords[Text]
+
+	if (Type == nil)
+	{
+		Type = ciTokenType.IDENTIFIER
+	}
+
+	ciAddToken(Scanner, Type)
+}
+
+ciIsAlpha :: proc(C : u8) -> bool
+{
+	return ((C >= 'a' && C <= 'z') ||
+		    (C >= 'A' && C <= 'Z') ||
+	        (C == '_'))
+		    
+}
+
+ciIsAlphaNumeric :: proc(C : u8) -> bool
+{
+	return (ciIsAlpha(C) || ciIsDigit(C))
 }
 
