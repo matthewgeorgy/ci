@@ -20,21 +20,16 @@ ciReport :: proc(Line : int, Where, Message : string)
 
 ciRun :: proc(Source : string)
 {
-	Lines := strings.split_lines(Source)
-	fmt.println(Source)
-	Tokens : [dynamic]string
+	Scanner : ciScanner
 
-	for Line, Index in Lines
+	ciCreateScanner(&Scanner, Source)
+
+	Tokens := ciScanTokens(&Scanner)
+
+	for Token in Tokens
 	{
-		TokenLine := strings.split(Line, " ")
-
-		for Token in TokenLine
-		{
-			append(&Tokens, Token)
-		}
+		fmt.println(Token)
 	}
-
-	fmt.println(Tokens)
 }
 
 ciRunFile :: proc(Path : string)
@@ -76,7 +71,7 @@ main :: proc()
 	}
 
 	// Compound literal syntax!
-	Token := ciToken{ ciTokenType.AND, "foo", nil, 100 }
-	fmt.println(Token.Type, Token.Lexeme, Token.Literal, Token.Line)
+	// Token := ciToken{ ciTokenType.AND, "foo", nil, 100 }
+	// fmt.println(Token.Type, Token.Lexeme, Token.Literal, Token.Line)
 }
 
