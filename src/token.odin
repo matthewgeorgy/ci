@@ -28,7 +28,14 @@ ciToken :: struct
 {
 	Type 	: ciTokenType,
 	Lexeme 	: string,
-	Object 	: rawptr,
+	Literal : ciObject,
 	Line 	: int
+}
+
+ciObject :: union 
+{
+	rawptr,
+	f64,
+	string
 }
 
