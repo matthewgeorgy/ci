@@ -7,20 +7,26 @@ import "core:io"
 
 DefineType :: proc(Writer : ^strings.Builder, BaseName, ClassName, FieldList : string)
 {
-	// Name:
-	// ClassName :: struct
-	strings.write_string(Writer, strings.concatenate([]string{ ClassName, " :: struct ", "\n{\n" }))
+	Prefix := "ci"
+
+	strings.write_string(Writer, strings.concatenate([]string{ Prefix, ClassName, " :: struct ", "\n{\n" }))
 
 	// Fields
 	Fields := strings.split(FieldList, ", ")
 	for Field in Fields
 	{
-		strings.write_string(Writer, "    ")    
-		strings.write_string(Writer, Field)
+		Type := strings.trim_space(strings.split(Field, " ")[0])
+		Name := strings.trim_space(strings.split(Field, " ")[1])
+
+		strings.write_string(Writer, "    ")
+		strings.write_string(Writer, Name)
+		strings.write_string(Writer, " : ")
+		strings.write_string(Writer, Prefix)
+		strings.write_string(Writer, Type)
 		strings.write_string(Writer, ",\n")
 	}
 
-	strings.write_string(Writer, "\n}\n")
+	strings.write_string(Writer, "}\n\n")
 }
 
 DefineAST :: proc(OutputDir, BaseName : string, Types : []string)
@@ -41,18 +47,27 @@ DefineAST :: proc(OutputDir, BaseName : string, Types : []string)
 	strings.write_string(&Writer, "import \"core:strings\"")
 	strings.write_string(&Writer, "\n\n")
 
-	strings.write_string(&Writer, strings.concatenate([]string{ "ci", BaseName, " :: struct\n", "{\n" }[:]))
+	strings.write_string(&Writer, strings.concatenate([]string{ "ci", BaseName, " :: union\n", "{\n" }[:]))
+
+	for Type in Types
+	{
+		ClassName := strings.trim_space(strings.split(Type, ":")[0])
+
+		strings.write_string(&Writer, "    ^ci")
+		strings.write_string(&Writer, ClassName)
+		strings.write_string(&Writer, ",\n")
+	}
+
+	strings.write_string(&Writer, "}\n\n")
 
 	for Type in Types
 	{
 		ClassName := strings.trim_space(strings.split(Type, ":")[0])
 		Fields := strings.trim_space(strings.split(Type, ":")[1])
 
-		DefineType(&Writer, "", ClassName, Fields)
+		DefineType(&Writer, "Expr", ClassName, Fields)
 		fmt.println(ClassName, Fields)
 	}
-
-	strings.write_string(&Writer, "}")
 
 	fmt.println(strings.to_string(Writer))
 }
@@ -72,7 +87,7 @@ main :: proc()
 	DefineAST(Args[1], "Expr", []string{
 		"Binary : Expr left, Token operator, Expr right",
 		"Grouping : Expr expression",
-		"Literal : object value",
+		"Literal : Object value",
 		"Unary : Token operator, Expr right"
 	})
 }
