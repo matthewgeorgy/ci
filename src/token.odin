@@ -36,6 +36,7 @@ ciObject :: union
 {
 	rawptr,
 	f64,
-	string
+	string,
+	bool
 }
 
