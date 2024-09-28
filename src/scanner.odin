@@ -39,38 +39,38 @@ ciCreateScanner :: proc(Scanner : ^ciScanner, Source : string)
     Scanner.Keywords["while"]  = ciTokenType.WHILE
 }
 
-ciScanToken :: proc(Scanner : ^ciScanner)
+ciScanner_ScanToken :: proc(Scanner : ^ciScanner)
 {
-	C := ciAdvance(Scanner)
+	C := ciScanner_Advance(Scanner)
 
 	switch (C)
 	{
-		case '(' : { ciAddToken(Scanner, ciTokenType.LEFT_PAREN) }
-		case ')' : { ciAddToken(Scanner, ciTokenType.RIGHT_PAREN) }
-		case '{' : { ciAddToken(Scanner, ciTokenType.LEFT_BRACE) }
-		case '}' : { ciAddToken(Scanner, ciTokenType.RIGHT_BRACE) }
-		case ',' : { ciAddToken(Scanner, ciTokenType.COMMA) }
-		case '.' : { ciAddToken(Scanner, ciTokenType.DOT) }
-		case '-' : { ciAddToken(Scanner, ciTokenType.MINUS) }
-		case '+' : { ciAddToken(Scanner, ciTokenType.PLUS) }
-		case ';' : { ciAddToken(Scanner, ciTokenType.SEMICOLON) }
-		case '*' : { ciAddToken(Scanner, ciTokenType.STAR) }
-		case '!' : { ciAddToken(Scanner, ciMatch(Scanner, '=') ? ciTokenType.BANG_EQUAL : ciTokenType.BANG) }
-		case '=' : { ciAddToken(Scanner, ciMatch(Scanner, '=') ? ciTokenType.EQUAL_EQUAL : ciTokenType.EQUAL) }
-		case '<' : { ciAddToken(Scanner, ciMatch(Scanner, '=') ? ciTokenType.LESS_EQUAL : ciTokenType.LESS) }
-		case '>' : { ciAddToken(Scanner, ciMatch(Scanner, '=') ? ciTokenType.GREATER_EQUAL : ciTokenType.GREATER) }
+		case '(' : { ciScanner_AddToken(Scanner, ciTokenType.LEFT_PAREN) }
+		case ')' : { ciScanner_AddToken(Scanner, ciTokenType.RIGHT_PAREN) }
+		case '{' : { ciScanner_AddToken(Scanner, ciTokenType.LEFT_BRACE) }
+		case '}' : { ciScanner_AddToken(Scanner, ciTokenType.RIGHT_BRACE) }
+		case ',' : { ciScanner_AddToken(Scanner, ciTokenType.COMMA) }
+		case '.' : { ciScanner_AddToken(Scanner, ciTokenType.DOT) }
+		case '-' : { ciScanner_AddToken(Scanner, ciTokenType.MINUS) }
+		case '+' : { ciScanner_AddToken(Scanner, ciTokenType.PLUS) }
+		case ';' : { ciScanner_AddToken(Scanner, ciTokenType.SEMICOLON) }
+		case '*' : { ciScanner_AddToken(Scanner, ciTokenType.STAR) }
+		case '!' : { ciScanner_AddToken(Scanner, ciScanner_Match(Scanner, '=') ? ciTokenType.BANG_EQUAL : ciTokenType.BANG) }
+		case '=' : { ciScanner_AddToken(Scanner, ciScanner_Match(Scanner, '=') ? ciTokenType.EQUAL_EQUAL : ciTokenType.EQUAL) }
+		case '<' : { ciScanner_AddToken(Scanner, ciScanner_Match(Scanner, '=') ? ciTokenType.LESS_EQUAL : ciTokenType.LESS) }
+		case '>' : { ciScanner_AddToken(Scanner, ciScanner_Match(Scanner, '=') ? ciTokenType.GREATER_EQUAL : ciTokenType.GREATER) }
 		case '/':
 		{
-			if (ciMatch(Scanner, '/'))
+			if (ciScanner_Match(Scanner, '/'))
 			{
-				for (ciPeek(Scanner) != '\n' && !ciIsAtEnd(Scanner))
+				for (ciScanner_Peek(Scanner) != '\n' && !ciScanner_IsAtEnd(Scanner))
 				{
-					ciAdvance(Scanner);
+					ciScanner_Advance(Scanner);
 				}
 			}
 			else
 			{
-				ciAddToken(Scanner, ciTokenType.SLASH)
+				ciScanner_AddToken(Scanner, ciTokenType.SLASH)
 			}
 		}
 
@@ -82,17 +82,17 @@ ciScanToken :: proc(Scanner : ^ciScanner)
 			Scanner.Line += 1
 		}
 
-		case '"': { ciString(Scanner) }
+		case '"': { ciScanner_String(Scanner) }
 
 		case:
 		{ 
 			if (ciIsDigit(C))
 			{
-				ciNumber(Scanner)
+				ciScanner_Number(Scanner)
 			}
 			else if (ciIsAlpha(C))
 			{
-				ciIdentifier(Scanner)
+				ciScanner_Identifier(Scanner)
 			}
 			else
 			{
@@ -103,12 +103,12 @@ ciScanToken :: proc(Scanner : ^ciScanner)
 
 }
 
-ciScanTokens :: proc(Scanner : ^ciScanner) -> []ciToken
+ciScanner_ScanTokens :: proc(Scanner : ^ciScanner) -> []ciToken
 {
-	for !ciIsAtEnd(Scanner)
+	for !ciScanner_IsAtEnd(Scanner)
 	{
 		Scanner.Start = Scanner.Current;
-		ciScanToken(Scanner);
+		ciScanner_ScanToken(Scanner);
 	}
 
 	NewToken := ciToken{ ciTokenType.EOF, "", nil, Scanner.Line }
@@ -118,12 +118,12 @@ ciScanTokens :: proc(Scanner : ^ciScanner) -> []ciToken
 	return (Scanner.Tokens[:])
 }
 
-ciIsAtEnd :: proc(Scanner : ^ciScanner) -> bool
+ciScanner_IsAtEnd :: proc(Scanner : ^ciScanner) -> bool
 {
 	return (Scanner.Current >= len(Scanner.Source))
 }
 
-ciAdvance :: proc(Scanner : ^ciScanner) -> u8
+ciScanner_Advance :: proc(Scanner : ^ciScanner) -> u8
 {
 	C := Scanner.Source[Scanner.Current]
 	Scanner.Current += 1
@@ -131,12 +131,12 @@ ciAdvance :: proc(Scanner : ^ciScanner) -> u8
 	return (C)
 }
 
-ciAddToken :: proc(Scanner : ^ciScanner, Type : ciTokenType)
+ciScanner_AddToken :: proc(Scanner : ^ciScanner, Type : ciTokenType)
 {
-	ciAddToken2(Scanner, Type, nil)
+	ciScanner_AddToken2(Scanner, Type, nil)
 }
 
-ciAddToken2 :: proc(Scanner : ^ciScanner, Type : ciTokenType, Literal : ciObject)
+ciScanner_AddToken2 :: proc(Scanner : ^ciScanner, Type : ciTokenType, Literal : ciObject)
 {
 	Text := Scanner.Source[Scanner.Start:Scanner.Current]
 	Token := ciToken{ Type, Text, Literal, Scanner.Line}
@@ -144,9 +144,9 @@ ciAddToken2 :: proc(Scanner : ^ciScanner, Type : ciTokenType, Literal : ciObject
 	append(&Scanner.Tokens, Token)
 }
 
-ciMatch :: proc(Scanner : ^ciScanner, Exepected : u8) -> bool
+ciScanner_Match :: proc(Scanner : ^ciScanner, Exepected : u8) -> bool
 {
-	if (ciIsAtEnd(Scanner))
+	if (ciScanner_IsAtEnd(Scanner))
 	{
 		return (false)
 	}
@@ -161,9 +161,9 @@ ciMatch :: proc(Scanner : ^ciScanner, Exepected : u8) -> bool
 	return (true)
 }
 
-ciPeek :: proc(Scanner : ^ciScanner) -> u8
+ciScanner_Peek :: proc(Scanner : ^ciScanner) -> u8
 {
-	if (ciIsAtEnd(Scanner))
+	if (ciScanner_IsAtEnd(Scanner))
 	{
 		return (0)
 	}
@@ -171,28 +171,28 @@ ciPeek :: proc(Scanner : ^ciScanner) -> u8
 	return (Scanner.Source[Scanner.Current])
 }
 
-ciString :: proc(Scanner : ^ciScanner)
+ciScanner_String :: proc(Scanner : ^ciScanner)
 {
-	for (ciPeek(Scanner) != '"' && !ciIsAtEnd(Scanner))
+	for (ciScanner_Peek(Scanner) != '"' && !ciScanner_IsAtEnd(Scanner))
 	{
-		if (ciPeek(Scanner) == '\n')
+		if (ciScanner_Peek(Scanner) == '\n')
 		{
 			Scanner.Line += 1
 		}
 
-		ciAdvance(Scanner)
+		ciScanner_Advance(Scanner)
 	}
 
-	if (ciIsAtEnd(Scanner))
+	if (ciScanner_IsAtEnd(Scanner))
 	{
 		ciError(Scanner.Line, "Unterminated String.")
 	}
 
-	ciAdvance(Scanner)
+	ciScanner_Advance(Scanner)
 
 	Value := Scanner.Source[Scanner.Start + 1:Scanner.Current - 1]
 
-	ciAddToken2(Scanner, ciTokenType.STRING, Value)
+	ciScanner_AddToken2(Scanner, ciTokenType.STRING, Value)
 }
 
 ciIsDigit :: proc(C : u8) -> bool
@@ -200,31 +200,31 @@ ciIsDigit :: proc(C : u8) -> bool
 	return (C >= '0' && C <= '9')
 }
 
-ciNumber :: proc(Scanner : ^ciScanner)
+ciScanner_Number :: proc(Scanner : ^ciScanner)
 {
-	for (ciIsDigit(ciPeek(Scanner)))
+	for (ciIsDigit(ciScanner_Peek(Scanner)))
 	{
-		ciAdvance(Scanner)
+		ciScanner_Advance(Scanner)
 	}
 
 	// Look for a fractional part
-	if (ciPeek(Scanner) == '.' && ciIsDigit(ciPeekNext(Scanner)))
+	if (ciScanner_Peek(Scanner) == '.' && ciIsDigit(ciScanner_PeekNext(Scanner)))
 	{
 		// Consume the .
-		ciAdvance(Scanner)
+		ciScanner_Advance(Scanner)
 
-		for (ciIsDigit(ciPeek(Scanner)))
+		for (ciIsDigit(ciScanner_Peek(Scanner)))
 		{
-			ciAdvance(Scanner)
+			ciScanner_Advance(Scanner)
 		}
 	}
 
 	Number := Scanner.Source[Scanner.Start:Scanner.Current]
 
-	ciAddToken2(Scanner, ciTokenType.NUMBER, strconv.atof(Number))
+	ciScanner_AddToken2(Scanner, ciTokenType.NUMBER, strconv.atof(Number))
 }
 
-ciPeekNext :: proc(Scanner : ^ciScanner) -> u8
+ciScanner_PeekNext :: proc(Scanner : ^ciScanner) -> u8
 {
 	if (Scanner.Current + 1 >= len(Scanner.Source))
 	{
@@ -234,11 +234,11 @@ ciPeekNext :: proc(Scanner : ^ciScanner) -> u8
 	return (Scanner.Source[Scanner.Current + 1])
 }
 
-ciIdentifier :: proc(Scanner : ^ciScanner)
+ciScanner_Identifier :: proc(Scanner : ^ciScanner)
 {
-	for (ciIsAlphaNumeric(ciPeek(Scanner)))
+	for (ciIsAlphaNumeric(ciScanner_Peek(Scanner)))
 	{
-		ciAdvance(Scanner)
+		ciScanner_Advance(Scanner)
 	}
 
 	Text := Scanner.Source[Scanner.Start:Scanner.Current]
@@ -249,7 +249,7 @@ ciIdentifier :: proc(Scanner : ^ciScanner)
 		Type = ciTokenType.IDENTIFIER
 	}
 
-	ciAddToken(Scanner, Type)
+	ciScanner_AddToken(Scanner, Type)
 }
 
 ciIsAlpha :: proc(C : u8) -> bool

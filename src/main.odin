@@ -24,7 +24,7 @@ ciRun :: proc(Source : string)
 
 	ciCreateScanner(&Scanner, Source)
 
-	Tokens := ciScanTokens(&Scanner)
+	Tokens := ciScanner_ScanTokens(&Scanner)
 
 	for Token in Tokens
 	{
