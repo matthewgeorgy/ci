@@ -216,7 +216,7 @@ ciParser_Unary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 ciParser_Primary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 {
 	Expr : ^ciExpr
-	Err : ciParseError
+	Err : ciParseError = true
 
 	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.FALSE }))
 	{
@@ -269,7 +269,7 @@ ciParser_Primary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 ciParser_Consume :: proc(Parser : ^ciParser, Type : ciTokenType, Message : string) -> (ciToken, ciParseError)
 {
 	Token : ciToken
-	Err : ciParseError
+	Err : ciParseError = true
 
 	if (ciParser_Check(Parser, Type))
 	{

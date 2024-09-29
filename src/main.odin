@@ -46,6 +46,8 @@ ciRun :: proc(Source : string)
 
 	Expr := ciParser_Parse(&Parser)
 
+	fmt.println(ciPrintExpr(Expr))
+
 	// for Token in Tokens
 	// {
 	// 	fmt.println(Token)
