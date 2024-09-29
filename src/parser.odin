@@ -4,24 +4,21 @@ import "core:strings"
 
 ciParser :: struct
 {
-	Tokens	: [dynamic]ciToken,
+	Tokens	: []ciToken,
 	Current	: int
 }
 
-ciParserError :: struct
-{
-	Value : int
-}
+ciParseError :: int
 
-ciCreateParser :: proc(Parser : ^ciParser, Tokens : [dynamic]ciToken)
+ciCreateParser :: proc(Parser : ^ciParser, Tokens : []ciToken)
 {
 	Parser.Tokens = Tokens
 	Parser.Current = 0
 }
 
-ciParser_Expression :: proc(Parser : ^ciParser) -> ^ciExpr
+ciParser_Expression :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 {
-	return (ciParser_Equality(Parser))
+	return ciParser_Equality(Parser), 0
 }
 
 ciParser_Equality :: proc(Parser : ^ciParser) -> ^ciExpr
@@ -139,12 +136,12 @@ ciParser_Term :: proc(Parser : ^ciParser) -> ^ciExpr
 
 ciParser_Factor :: proc(Parser : ^ciParser) -> ^ciExpr
 {
-	Expr := ciParser_Unary(Parser)
+	Expr, _ := ciParser_Unary(Parser)
 
 	for (ciParser_Match(Parser, []ciTokenType{ ciTokenType.SLASH, ciTokenType.STAR }))
 	{
 		Operator := ciParser_Previous(Parser)
-		Right := ciParser_Unary(Parser);
+		Right, _ := ciParser_Unary(Parser);
 
 		TempExpr := NewExpr(ciBinary)
 
@@ -158,59 +155,54 @@ ciParser_Factor :: proc(Parser : ^ciParser) -> ^ciExpr
 	return (Expr)
 }
 
-ciParser_Unary :: proc(Parser : ^ciParser) -> ^ciExpr
+ciParser_Unary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 {
+	Err : ciParseError
+
 	for (ciParser_Match(Parser, []ciTokenType{ ciTokenType.SLASH, ciTokenType.STAR }))
 	{
 		Operator := ciParser_Previous(Parser)
-		Right := ciParser_Unary(Parser);
+		Right, _ := ciParser_Unary(Parser);
 
 		Expr := NewExpr(ciUnary)
 
 		Expr.operator = Operator
 		Expr.right = Right
 
-		return (Expr)
+		return Expr, Err
 	}
 
 	return (ciParser_Primary(Parser))
 }
 
-ciParser_Primary :: proc(Parser : ^ciParser) -> ^ciExpr
+ciParser_Primary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 {
 	Expr : ^ciExpr
+	Err : ciParseError
 
 	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.FALSE }))
 	{
 		TempExpr := NewExpr(ciLiteral)
 		TempExpr.value = false
 		Expr = TempExpr
-	}
-
-	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.TRUE }))
+	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.TRUE }))
 	{
 		TempExpr := NewExpr(ciLiteral)
 		TempExpr.value = true
 		Expr = TempExpr
-	}
-
-	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.NIL }))
+	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.NIL }))
 	{
 		TempExpr := NewExpr(ciLiteral)
 		TempExpr.value = nil
 		Expr = TempExpr
-	}
-
-	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.NUMBER, ciTokenType.STRING }))
+	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.NUMBER, ciTokenType.STRING }))
 	{
 		TempExpr := NewExpr(ciLiteral)
 		TempExpr.value = ciParser_Previous(Parser).Literal
 		Expr = TempExpr
-	}
-
-	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.LEFT_PAREN }))
+	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.LEFT_PAREN }))
 	{
-		TempExpr := ciParser_Expression(Parser)
+		TempExpr, _ := ciParser_Expression(Parser)
 
 		ciParser_Consume(Parser, ciTokenType.RIGHT_PAREN, "Expected '(' after expression.");
 
@@ -218,15 +210,19 @@ ciParser_Primary :: proc(Parser : ^ciParser) -> ^ciExpr
 		TempExpr2.expression = TempExpr
 
 		Expr = TempExpr2
+	} else
+	{
+		ciError2(ciParser_Peek(Parser), "Expect expression.")
+		Err = 1
 	}
 
-	return (Expr)
+	return Expr, Err
 }
 
-ciParser_Consume :: proc(Parser : ^ciParser, Type : ciTokenType, Message : string) -> (ciToken, ciParserError)
+ciParser_Consume :: proc(Parser : ^ciParser, Type : ciTokenType, Message : string) -> (ciToken, ciParseError)
 {
 	Token : ciToken
-	Err : ciParserError
+	Err : ciParseError
 
 	if (ciParser_Check(Parser, Type))
 	{
@@ -240,10 +236,10 @@ ciParser_Consume :: proc(Parser : ^ciParser, Type : ciTokenType, Message : strin
 	return Token, Err
 }
 
-ciParser_Error :: proc(Parser : ^ciParser, Token : ciToken, Message : string) -> ciParserError
+ciParser_Error :: proc(Parser : ^ciParser, Token : ciToken, Message : string) -> ciParseError
 {
 	ciError2(Token, Message)
-	Err : ciParserError = { 1 }
+	Err : ciParseError = 1
 
 	return Err
 }
@@ -276,5 +272,17 @@ ciParser_Synchronize :: proc(Parser : ^ciParser)
 
 		ciParser_Advance(Parser)
 	}
+}
+
+ciParser_Parse :: proc(Parser : ^ciParser) -> ^ciExpr
+{
+	 Expr, Err := ciParser_Expression(Parser)
+
+	 if (Err != 0)
+	 {
+		 return nil
+	 }
+
+	 return Expr
 }
 

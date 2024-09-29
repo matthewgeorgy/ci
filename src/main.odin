@@ -33,19 +33,24 @@ ciError2 :: proc(Token : ciToken, Message : string)
 	}
 }
 
-
 ciRun :: proc(Source : string)
 {
 	Scanner : ciScanner
+	Parser : ciParser
 
 	ciCreateScanner(&Scanner, Source)
 
 	Tokens := ciScanner_ScanTokens(&Scanner)
 
-	for Token in Tokens
-	{
-		fmt.println(Token)
-	}
+	ciCreateParser(&Parser, Tokens)
+
+	Expr := ciParser_Parse(Parser)
+
+	// for Token in Tokens
+	// {
+	// 	fmt.println(Token)
+	// }
+
 }
 
 ciRunFile :: proc(Path : string)
