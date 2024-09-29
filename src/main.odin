@@ -44,7 +44,7 @@ ciRun :: proc(Source : string)
 
 	ciCreateParser(&Parser, Tokens)
 
-	Expr := ciParser_Parse(Parser)
+	Expr := ciParser_Parse(&Parser)
 
 	// for Token in Tokens
 	// {
