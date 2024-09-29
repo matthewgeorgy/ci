@@ -18,6 +18,22 @@ ciReport :: proc(Line : int, Where, Message : string)
 	fmt.printf("[line %d] Error%s: %s\n", Line, Where, Message)
 }
 
+ciError2 :: proc(Token : ciToken, Message : string)
+{
+	if (Token.Type == ciTokenType.EOF)
+	{
+		ciReport(Token.Line, " at end", Message)
+	}
+	else
+	{
+		Strs := [?]string{ " at'", Token.Lexeme, "'" }
+
+
+		ciReport(Token.Line, strings.concatenate(Strs[:]), Message)
+	}
+}
+
+
 ciRun :: proc(Source : string)
 {
 	Scanner : ciScanner

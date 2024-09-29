@@ -8,6 +8,11 @@ ciParser :: struct
 	Current	: int
 }
 
+ciParserError :: struct
+{
+	Value : int
+}
+
 ciCreateParser :: proc(Parser : ^ciParser, Tokens : [dynamic]ciToken)
 {
 	Parser.Tokens = Tokens
@@ -216,5 +221,30 @@ ciParser_Primary :: proc(Parser : ^ciParser) -> ^ciExpr
 	}
 
 	return (Expr)
+}
+
+ciParser_Consume :: proc(Parser : ^ciParser, Type : ciTokenType, Message : string) -> (ciToken, ciParserError)
+{
+	Token : ciToken
+	Err : ciParserError
+
+	if (ciParser_Check(Parser, Type))
+	{
+		Token = ciParser_Advance(Parser)
+	}
+	else
+	{
+		Err = ciParser_Error(Parser, ciParser_Peek(Parser), Message)
+	}
+
+	return Token, Err
+}
+
+ciParser_Error :: proc(Parser : ^ciParser, Token : ciToken, Message : string) -> ciParserError
+{
+	ciError2(Token, Message)
+	Err : ciParserError = { 1 }
+
+	return Err
 }
 
