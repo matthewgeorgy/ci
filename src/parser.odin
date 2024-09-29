@@ -248,3 +248,33 @@ ciParser_Error :: proc(Parser : ^ciParser, Token : ciToken, Message : string) ->
 	return Err
 }
 
+ciParser_Synchronize :: proc(Parser : ^ciParser)
+{
+	ciParser_Advance(Parser)
+
+	for (!ciParser_IsAtEnd(Parser))
+	{
+		if (ciParser_Previous(Parser).Type == ciTokenType.SEMICOLON)
+		{
+			return
+		}
+
+		#partial switch (ciParser_Peek(Parser).Type)
+		{
+			case ciTokenType.CLASS:
+			case ciTokenType.FUN:
+			case ciTokenType.VAR:
+			case ciTokenType.FOR:
+			case ciTokenType.IF:
+			case ciTokenType.WHILE:
+			case ciTokenType.PRINT:
+			case ciTokenType.RETURN:
+			{
+				return
+			}
+		}
+
+		ciParser_Advance(Parser)
+	}
+}
+
