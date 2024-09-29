@@ -40,9 +40,9 @@ ciParser_Equality :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 
 		TempExpr := NewExpr(ciBinary)
 
-		TempExpr.left = Expr
-		TempExpr.operator = Operator
-		TempExpr.right = Right
+		TempExpr.Left = Expr
+		TempExpr.Operator = Operator
+		TempExpr.Right = Right
 
 		Expr = TempExpr
 	}
@@ -119,9 +119,9 @@ ciParser_Comparison :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 
 		TempExpr := NewExpr(ciBinary)
 
-		TempExpr.left = Expr
-		TempExpr.operator = Operator
-		TempExpr.right = Right
+		TempExpr.Left = Expr
+		TempExpr.Operator = Operator
+		TempExpr.Right = Right
 
 		Expr = TempExpr
 	}
@@ -148,9 +148,9 @@ ciParser_Term :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 
 		TempExpr := NewExpr(ciBinary)
 
-		TempExpr.left = Expr
-		TempExpr.operator = Operator
-		TempExpr.right = Right
+		TempExpr.Left = Expr
+		TempExpr.Operator = Operator
+		TempExpr.Right = Right
 
 		Expr = TempExpr
 	}
@@ -177,9 +177,9 @@ ciParser_Factor :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 
 		TempExpr := NewExpr(ciBinary)
 
-		TempExpr.left = Expr
-		TempExpr.operator = Operator
-		TempExpr.right = Right
+		TempExpr.Left = Expr
+		TempExpr.Operator = Operator
+		TempExpr.Right = Right
 
 		Expr = TempExpr
 	}
@@ -202,8 +202,8 @@ ciParser_Unary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 
 		Expr := NewExpr(ciUnary)
 
-		Expr.operator = Operator
-		Expr.right = Right
+		Expr.Operator = Operator
+		Expr.Right = Right
 
 		return Expr, Err
 	}
@@ -221,22 +221,22 @@ ciParser_Primary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 	if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.FALSE }))
 	{
 		TempExpr := NewExpr(ciLiteral)
-		TempExpr.value = false
+		TempExpr.Value = false
 		Expr = TempExpr
 	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.TRUE }))
 	{
 		TempExpr := NewExpr(ciLiteral)
-		TempExpr.value = true
+		TempExpr.Value = true
 		Expr = TempExpr
 	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.NIL }))
 	{
 		TempExpr := NewExpr(ciLiteral)
-		TempExpr.value = nil
+		TempExpr.Value = nil
 		Expr = TempExpr
 	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.NUMBER, ciTokenType.STRING }))
 	{
 		TempExpr := NewExpr(ciLiteral)
-		TempExpr.value = ciParser_Previous(Parser).Literal
+		TempExpr.Value = ciParser_Previous(Parser).Literal
 		Expr = TempExpr
 	} else if (ciParser_Match(Parser, []ciTokenType{ ciTokenType.LEFT_PAREN }))
 	{
@@ -253,7 +253,7 @@ ciParser_Primary :: proc(Parser : ^ciParser) -> (^ciExpr, ciParseError)
 		}
 
 		TempExpr2 := NewExpr(ciGrouping)
-		TempExpr2.expression = TempExpr
+		TempExpr2.Expression = TempExpr
 
 		Expr = TempExpr2
 	} else

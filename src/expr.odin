@@ -9,31 +9,31 @@ ciBinary :: struct
 {
 	using e : ciExpr,
 
-    left : ^ciExpr,
-    operator : ciToken,
-    right : ^ciExpr,
+    Left : ^ciExpr,
+    Operator : ciToken,
+    Right : ^ciExpr,
 }
 
 ciGrouping :: struct
 {
 	using e : ciExpr,
 
-    expression : ^ciExpr,
+    Expression : ^ciExpr,
 }
 
 ciLiteral :: struct
 {
 	using e : ciExpr,
 
-    value : ciObject,
+    Value : ciObject,
 }
 
 ciUnary :: struct
 {
 	using e : ciExpr,
 
-    operator : ciToken,
-    right : ^ciExpr,
+    Operator : ciToken,
+    Right : ^ciExpr,
 }
 
 NewExpr :: proc($T : typeid) -> ^T
